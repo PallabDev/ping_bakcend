@@ -8,14 +8,41 @@ on:
 jobs:
   check-render:
     runs-on: ubuntu-latest
-
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
       - name: Check /uptime endpoint
         id: ping
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 1.5 https://main-backend-b3ak.onrender.com/uptime || echo "timeout")
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 65 https://main-backend-b3ak.onrender.com/uptime)
+          EXIT_CODE=$?
+          if [ $EXIT_CODE -ne 0 ]; then
+            STATUS="timeout"
+          else
+            STATUS="$RESPONSE"
+          fi
           echo "STATUS=$STATUS" >> $GITHUB_ENV
           echo "Server returned HTTP status: $STATUS"
+
+      - name: Update status.json
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo "{\"status\":\"$STATUS\",\"timestamp\":\"$TIMESTAMP\"}" > status.json
+
+      - name: Commit and push status.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add status.json
+          git diff --cached --quiet || git commit -m "Update status.json: status=$STATUS at $TIMESTAMP"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log success message
+        if: env.STATUS == '200'
+        run: echo "✅ Render server is UP and responded with 200 OK"
 
       - name: Send Telegram alert if down or timeout
         if: env.STATUS != '200'

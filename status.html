@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>StudyProtocol Server Status</title>
+  <meta charset="utf-8" />
+</head>
+<body>
+  <h1>Render Server Status</h1>
+  <div id="status">Loading...</div>
+
+  <script>
+    fetch('status.json')
+      .then(res => res.json())
+      .then(data => {
+        const statusText = data.status === '200'
+          ? '🟢 UP'
+          : `🔴 DOWN (${data.status})`;
+        document.getElementById('status').textContent =
+          `Status: ${statusText} — Last checked at ${data.timestamp}`;
+      })
+      .catch(() => {
+        document.getElementById('status').textContent = '⚠️ Could not load status';
+      });
+  </script>
+</body>
+</html>
