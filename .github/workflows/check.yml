@@ -33,8 +33,8 @@ jobs:
 
       - name: Update status.json
         run: |
-          TIMESTAMP=$(TZ=Asia/Kolkata date +"%Y-%m-%dT%H:%M:%S%z")
-          TIMESTAMP="${TIMESTAMP:0:22}:${TIMESTAMP:22:2}"  # Insert colon in timezone offset
+          # Format example: May 23, 2025 01:28:37 PM IST
+          TIMESTAMP=$(TZ=Asia/Kolkata date +"%b %d, %Y %I:%M:%S %p IST")
           echo "{\"status\":\"$STATUS\",\"timestamp\":\"$TIMESTAMP\"}" > status.json
           echo "TIMESTAMP=$TIMESTAMP" >> $GITHUB_ENV
 
