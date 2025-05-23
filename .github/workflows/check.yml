@@ -1,0 +1,23 @@
+name: Monitor Render Server
+
+on:
+  schedule:
+    - cron: '*/1 * * * *'  # Every 1 minute (UTC)
+  workflow_dispatch:
+
+jobs:
+  check-render:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check /uptime endpoint
+        id: ping
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 1.5 https://main-backend-b3ak.onrender.com/uptime || echo "timeout")
+          echo "STATUS=$STATUS" >> $GITHUB_ENV
+          echo "Server returned HTTP status: $STATUS"
+
+      - name: Send Telegram alert if down or timeout
+        if: env.STATUS != '200'
+        run: |
+          curl -s "https://api.telegram.org/bot7912010445:AAH8DivQSTW8PrN6N9hNXpDj2WdG5DVXAaI/sendMessage?chat_id=807564728&text=🚨+Render+StudyProtocol+Server+Not+Responding+or+Timed+Out+(Status:+$STATUS)"
