@@ -41,37 +41,34 @@
       color: #1f2937; /* Dark slate */
     }
 
-    #status {
-      font-size: 1.3rem;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 12px 15px;
+      border-bottom: 1px solid #ddd;
       font-weight: 600;
-      padding: 1rem 1.5rem;
-      border-radius: 8px;
-      background: #e5e7eb; /* Light gray */
-      color: #374151; /* Medium gray */
-      box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.05);
-      user-select: none;
-      min-height: 3rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background-color 0.3s ease, color 0.3s ease;
+      font-size: 1.1rem;
+    }
+    th {
+      background-color: #f3f4f6;
+      color: #374151;
+    }
+    td.status-up {
+      color: #15803d;
+      font-weight: 700;
+    }
+    td.status-down {
+      color: #b91c1c;
+      font-weight: 700;
     }
 
-    /* Status color variants */
-    .up {
-      background-color: #dcfce7; /* Light green */
-      color: #15803d; /* Dark green */
-      box-shadow: inset 0 0 10px #4ade80;
-    }
-
-    .down {
-      background-color: #fee2e2; /* Light red */
-      color: #b91c1c; /* Dark red */
-      box-shadow: inset 0 0 10px #f87171;
-    }
-
-    .loading {
-      color: #6b7280; /* Gray */
+    #next-update {
+      font-size: 1rem;
+      color: #6b7280;
       font-style: italic;
     }
   </style>
@@ -79,32 +76,70 @@
 <body>
   <div class="container">
     <h1>Render Server Status</h1>
-    <div id="status" class="loading">Loading...</div>
+    <table>
+      <tr>
+        <th>Status</th>
+        <td id="status" class="loading">Loading...</td>
+      </tr>
+      <tr>
+        <th>Last Checked At</th>
+        <td id="timestamp">Loading...</td>
+      </tr>
+    </table>
+    <div id="next-update">Next update in: <span id="countdown">5</span> seconds</div>
   </div>
 
   <script>
+    const refreshInterval = 5; // seconds
+    let countdown = refreshInterval;
+
     function fetchStatus() {
       fetch('status.json')
         .then(res => res.json())
         .then(data => {
-          const statusDiv = document.getElementById('status');
+          const statusTd = document.getElementById('status');
+          const timestampTd = document.getElementById('timestamp');
+
           if (data.status === '200') {
-            statusDiv.textContent = `Status: 🟢 UP — Last checked at ${data.timestamp}`;
-            statusDiv.className = 'up';
+            statusTd.textContent = '🟢 UP';
+            statusTd.className = 'status-up';
           } else {
-            statusDiv.textContent = `Status: 🔴 DOWN (${data.status}) — Last checked at ${data.timestamp}`;
-            statusDiv.className = 'down';
+            statusTd.textContent = `🔴 DOWN (${data.status})`;
+            statusTd.className = 'status-down';
           }
+          timestampTd.textContent = data.timestamp;
         })
         .catch(() => {
-          const statusDiv = document.getElementById('status');
-          statusDiv.textContent = '⚠️ Could not load status';
-          statusDiv.className = 'down';
+          const statusTd = document.getElementById('status');
+          const timestampTd = document.getElementById('timestamp');
+          statusTd.textContent = '⚠️ Could not load status';
+          statusTd.className = 'status-down';
+          timestampTd.textContent = 'N/A';
         });
     }
 
-    fetchStatus(); // Initial call
-    setInterval(fetchStatus, 5000); // Refresh every 5 seconds
+    function updateCountdown() {
+      const countdownSpan = document.getElementById('countdown');
+      countdownSpan.textContent = countdown;
+      countdown--;
+
+      if (countdown < 0) {
+        countdown = refreshInterval;
+      }
+    }
+
+    // Initial fetch and countdown setup
+    fetchStatus();
+    updateCountdown();
+
+    // Repeat fetch every 5 seconds
+    setInterval(() => {
+      fetchStatus();
+      countdown = refreshInterval;
+    }, refreshInterval * 1000);
+
+    // Update countdown every second
+    setInterval(updateCountdown, 1000);
   </script>
 </body>
 </html>
