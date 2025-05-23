@@ -1,8 +1,11 @@
 name: Monitor Render Server
 
+permissions:
+  contents: write  # ensure write permission to push commits
+
 on:
   schedule:
-    - cron: '*/1 * * * *'  # Every 1 minute (UTC)
+    - cron: '*/1 * * * *'  # every 1 minute (UTC)
   workflow_dispatch:
 
 jobs:
@@ -11,6 +14,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check /uptime endpoint
         id: ping
@@ -29,16 +34,21 @@ jobs:
         run: |
           TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
           echo "{\"status\":\"$STATUS\",\"timestamp\":\"$TIMESTAMP\"}" > status.json
+          echo "TIMESTAMP=$TIMESTAMP" >> $GITHUB_ENV
 
       - name: Commit and push status.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
           git add status.json
           git diff --cached --quiet || git commit -m "Update status.json: status=$STATUS at $TIMESTAMP"
-          git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+          # Use token to authenticate push
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
+          git push origin HEAD:main
 
       - name: Log success message
         if: env.STATUS == '200'
