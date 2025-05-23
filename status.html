@@ -74,7 +74,6 @@
       color: #6b7280; /* Gray */
       font-style: italic;
     }
-
   </style>
 </head>
 <body>
@@ -84,23 +83,28 @@
   </div>
 
   <script>
-    fetch('status.json')
-      .then(res => res.json())
-      .then(data => {
-        const statusDiv = document.getElementById('status');
-        if (data.status === '200') {
-          statusDiv.textContent = `Status: 🟢 UP — Last checked at ${data.timestamp}`;
-          statusDiv.className = 'up';
-        } else {
-          statusDiv.textContent = `Status: 🔴 DOWN (${data.status}) — Last checked at ${data.timestamp}`;
+    function fetchStatus() {
+      fetch('status.json')
+        .then(res => res.json())
+        .then(data => {
+          const statusDiv = document.getElementById('status');
+          if (data.status === '200') {
+            statusDiv.textContent = `Status: 🟢 UP — Last checked at ${data.timestamp}`;
+            statusDiv.className = 'up';
+          } else {
+            statusDiv.textContent = `Status: 🔴 DOWN (${data.status}) — Last checked at ${data.timestamp}`;
+            statusDiv.className = 'down';
+          }
+        })
+        .catch(() => {
+          const statusDiv = document.getElementById('status');
+          statusDiv.textContent = '⚠️ Could not load status';
           statusDiv.className = 'down';
-        }
-      })
-      .catch(() => {
-        const statusDiv = document.getElementById('status');
-        statusDiv.textContent = '⚠️ Could not load status';
-        statusDiv.className = 'down';
-      });
+        });
+    }
+
+    fetchStatus(); // Initial call
+    setInterval(fetchStatus, 5000); // Refresh every 5 seconds
   </script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 name: Monitor Render Server
 
 permissions:
-  contents: write  # ensure write permission to push commits
+  contents: write  # allow pushing commits
 
 on:
   schedule:
@@ -11,6 +11,7 @@ on:
 jobs:
   check-render:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -39,6 +40,8 @@ jobs:
       - name: Commit and push status.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STATUS: ${{ env.STATUS }}
+          TIMESTAMP: ${{ env.TIMESTAMP }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -46,15 +49,5 @@ jobs:
           git add status.json
           git diff --cached --quiet || git commit -m "Update status.json: status=$STATUS at $TIMESTAMP"
 
-          # Use token to authenticate push
           git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
           git push origin HEAD:main
-
-      - name: Log success message
-        if: env.STATUS == '200'
-        run: echo "✅ Render server is UP and responded with 200 OK"
-
-      - name: Send Telegram alert if down or timeout
-        if: env.STATUS != '200'
-        run: |
-          curl -s "https://api.telegram.org/bot7912010445:AAH8DivQSTW8PrN6N9hNXpDj2WdG5DVXAaI/sendMessage?chat_id=807564728&text=🚨+Render+StudyProtocol+Server+Not+Responding+or+Timed+Out+(Status:+$STATUS)"
