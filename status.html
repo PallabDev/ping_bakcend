@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <title>StudyProtocol Server Status</title>
@@ -11,6 +12,7 @@
     * {
       box-sizing: border-box;
     }
+
     body {
       margin: 0;
       background: #f9fafb;
@@ -38,7 +40,8 @@
       margin-bottom: 1.5rem;
       font-weight: 700;
       font-size: 1.8rem;
-      color: #1f2937; /* Dark slate */
+      color: #1f2937;
+      /* Dark slate */
     }
 
     table {
@@ -46,21 +49,26 @@
       border-collapse: collapse;
       margin-bottom: 1.5rem;
     }
-    th, td {
+
+    th,
+    td {
       text-align: left;
       padding: 12px 15px;
       border-bottom: 1px solid #ddd;
       font-weight: 600;
       font-size: 1.1rem;
     }
+
     th {
       background-color: #f3f4f6;
       color: #374151;
     }
+
     td.status-up {
       color: #15803d;
       font-weight: 700;
     }
+
     td.status-down {
       color: #b91c1c;
       font-weight: 700;
@@ -73,6 +81,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="container">
     <h1>Render Server Status</h1>
@@ -94,7 +103,7 @@
     let countdown = refreshInterval;
 
     function fetchStatus() {
-      fetch('status.json')
+      fetch('status.json?cacheBust=' + Date.now())
         .then(res => res.json())
         .then(data => {
           const statusTd = document.getElementById('status');
@@ -142,4 +151,5 @@
     setInterval(updateCountdown, 1000);
   </script>
 </body>
+
 </html>
