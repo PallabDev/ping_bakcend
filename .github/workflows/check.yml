@@ -5,7 +5,7 @@ permissions:
 
 on:
   schedule:
-    - cron: '*/5 * * * *'  # Every 2 minutes (UTC)
+    - cron: '*/10 * * * *'  # Every 2 minutes (UTC)
   workflow_dispatch:
 
 jobs:
@@ -24,7 +24,7 @@ jobs:
       - name: Check /uptime endpoint
         id: ping
         run: |
-          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 65 https://main-backend-b3ak.onrender.com/uptime)
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 70 https://main-backend-b3ak.onrender.com/uptime)
           EXIT_CODE=$?
           if [ $EXIT_CODE -ne 0 ]; then
             STATUS="timeout"
