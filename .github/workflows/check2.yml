@@ -1,0 +1,21 @@
+name: Simple Monitor
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # Every 5 minutes (UTC)
+  workflow_dispatch:
+
+jobs:
+  ping-server:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ping /uptime endpoint
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 http://test-hr-backend.onrender.com/uptime)
+          if [ "$STATUS" = "200" ]; then
+            echo "Server is OK (200)"
+          else
+            echo "Server returned status: $STATUS"
+            exit 1
+          fi
