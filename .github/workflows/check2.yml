@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Ping /uptime endpoint
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 90 http://test-hr-backend.onrender.com/uptime)
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 90 https://test-hr-backend.onrender.com/uptime)
           if [ "$STATUS" = "200" ]; then
             echo "Server is OK (200)"
           else
